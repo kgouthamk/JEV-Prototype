@@ -14,7 +14,7 @@ streamlit run app.py
 ## Test
 
 ```bash
-pytest -q                                        # offline: 33 tests (payload contract, parsing, fallback, mock engine)
+pytest -q                                        # offline: 36 tests (payload contract, parsing, fallback, mock engine)
 JEV_LIVE=1 BEATS_API_KEY=... pytest -q -m live -s   # sends the 6 dataset cases to BeatAPI (~5 min: free tier is 1 req/min)
 ```
 

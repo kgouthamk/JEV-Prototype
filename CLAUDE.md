@@ -2,7 +2,7 @@
 
 ## Status (as of 2026-09-27)
 - **Built:** a Streamlit prototype that validates TypeSafe AI's JEV model (`jev-1.13-free`) on three P&C insurance workflows. Stakeholders see a confidence badge and meter, API latency, and a Safe Fallback badge.
-- **Tested offline:** 33 offline pytest pass, using canned responses and a mock engine. A headless Streamlit `AppTest` run of all 6 dataset cases gave the expected answers, and the fallback badge rendered on a low-confidence custom input.
+- **Tested offline:** 36 offline pytest pass, using canned responses and a mock engine. A headless Streamlit `AppTest` run of all 6 dataset cases gave the expected answers, and the fallback badge rendered on a low-confidence custom input.
 - **Endpoint fixed on 2026-09-27** to BeatAPI's documented `https://api.beatapi.io/v1/systemone`. The old bare domain was wrong. An unauthenticated POST returns 401, so the route exists. **Not yet run with a real key.**
 
 ## Run
@@ -47,6 +47,7 @@ Response: `{"id", "model", "answers": {"triage_task": {...}}, "usage"}`, where t
 - **Choice/Score confidence** uses the API's `confidence` field. If that's missing, it falls back to the winning class probability. Score's index is the argmax of `probabilities`, with the rounded continuous `score` as a fallback.
 - **The fallback is fail-safe:** `error OR confidence is None OR confidence < threshold` (default 0.85). The badge text must stay exactly: `⚠️ Low Confidence Fallback: Routing to Manual Review Queue`.
 - **Latency** is the client-observed round trip measured with `time.perf_counter`, not server inference time. Keep the label honest.
+- **Never put the server API key in a widget value.** Streamlit sends widget values to the browser, even `type="password"`. The sidebar shows "key configured on server" and an optional field for the visitor's own key. Endpoint and model are locked while the server key is in use, so it can't be sent to a URL a visitor chooses. `test_app_ui.py` enforces this.
 - **Mock mode** must stay clearly labeled in the UI. Never present its numbers as JEV results.
 
 ## Expected results for the dataset

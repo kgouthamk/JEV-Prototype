@@ -54,12 +54,25 @@ st.markdown(
 # --------------------------------------------------------------------------- #
 with st.sidebar:
     st.header("⚙️ Connection")
-    env_key = get_api_key()
-    api_key = st.text_input("BEATS_API_KEY", value=env_key, type="password",
-                            help="Read from BEATS_API_KEY (env var or .streamlit/secrets.toml) if set. Get a key at beatapi.io.")
-    endpoint = st.text_input("Endpoint", value=DEFAULT_ENDPOINT)
-    model = st.text_input("Model", value=MODEL)
-    use_mock = st.toggle("Mock mode (no API call)", value=not bool(env_key),
+    # The server key never goes into a widget: widget values are sent to the browser.
+    server_key = get_api_key()
+    if server_key:
+        st.success("🔒 API key configured on the server")
+    own_key = st.text_input(
+        "Your own BeatAPI key (optional)" if server_key else "BEATS_API_KEY",
+        type="password",
+        help="Used only for your session. Get a key at beatapi.io.",
+    )
+    api_key = own_key or server_key
+    # Endpoint and model are locked while the server key is in use, so the key
+    # can't be sent to a visitor-chosen URL.
+    locked = bool(server_key) and not own_key
+    endpoint = st.text_input("Endpoint", value=DEFAULT_ENDPOINT, disabled=locked,
+                             help="Enter your own key to change this." if locked else None)
+    model = st.text_input("Model", value=MODEL, disabled=locked)
+    if locked:
+        endpoint, model = DEFAULT_ENDPOINT, MODEL
+    use_mock = st.toggle("Mock mode (no API call)", value=not bool(server_key),
                          help="Keyword heuristic that mimics JEV's response shape. For UI demos only — not model output.")
     threshold = st.slider("Fallback threshold", 0.50, 0.99, CONFIDENCE_THRESHOLD, 0.01)
     timeout = st.number_input("Timeout (s)", 1.0, 60.0, 15.0, 1.0)
